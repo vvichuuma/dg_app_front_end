@@ -1,94 +1,133 @@
 
 <template>
   <div class="home">
-    
-<!-- Carousel -->
-
-  <h1>Questions</h1>
-  <br>
-  <ol>
-    <li v-for="surveyItem in surveyItems">
-      <h6>{{surveyItem.question}}</h6>
-      <span v-for="choice in choices">
-        <input type="radio" v-bind:value="choice" v-model="surveyItem.answer"> 
-        <label> {{ choice }} </label> | 
-      </span>
+  
+    <ol>
+    <li v-for="survey in surveyItems">
+      <h6>{{survey.question}}</h6>
+       <span v-for="choice in choices">
+         <input  type="radio" v-on:click="click(choice,survey.graph)" v-bind:value="choice" v-model="survey.answer"  >
+         <label>{{ choice }} &emsp; </label> 
+       </span>
     </li>
   </ol>
 
 
- <router-link :to="{ name: 'second_page', params: { id: 12  }}">
-   <button v-on:click="submit()">Submit</button>
- </router-link>
-  <!--  hello -->
+  <button v-on:click="result()">Calculate</button>
+
   </div>
 </template>
 
 <style>
-
-
 </style>
 
 <script>
+var axios = require("axios");
+console.log(axios);
+
 export default {
   data: function() {
     return {
       message: "Vishnu is an american Computer Programmer",
-      choices: [
-        "Vishnu",
-        "Vamsi",
-        "Naveen",
-        "Adi",
-        "Ganesh",
-        "Lokesh",
-        "Sachwin",
-        "Siddarth"
-      ],
+      choices: [],
+      compares: [],
+      persons: [],
+      ans: [],
       surveyItems: [
-        {question: "Who is the most Handsome Guy in the Group?", answer: ""},
-        {question: "Who's Belly is most cutest?", answer: ""},
-        {question: "Who has the most Blackest Soothu?", answer: ""},
-        {question: "Who is the most Unluckiest person in the group?", answer: ""},
-        {question: "Who is the most Luckiest Person in the group?", answer: ""},
-        {question: "Who is the most intelligent Person in the group?", answer: ""}
+        { question: "Who is the most intelligent?", answer: "",graph: "intelligence" },
+        { question: "Who's the most smart?", answer: "",graph: "smart" },
+        {
+          question: "Who is the most Handsome Person in the group?",
+          answer: "",graph: "handsome"
+        }
       ]
-      
     };
   },
-  created: function() {},
+  created: function() {
+    axios.get("http://localhost:3000/api/inde").then(
+      function(response) {
+        console.table(response.data);
+        var ar = response.data;
+        ar.forEach(
+          function(arr) {
+            this.choices.push(arr.name);
+          }.bind(this)
+        );
+      }.bind(this)
+    );
+  },
   methods: {
-    submit: function() {
 
+    click: function(cc,s){
 
-      var ans = [];
+         // var persons = [];
+         // var compares = [];
+
+         console.log(cc);
+         console.log(s);
       
-      this.choices.forEach(function(choice) {
 
-        var count = 0;
+         if(this.compares.includes(s)){
+         
+            var a = this.compares.indexOf(s)
 
-        this.surveyItems.forEach(function(sur) {
+             this.compares.splice(a,1)
 
-          if (choice === sur.answer) {
+             this.compares.push(s)
 
-            count += 1;
-          }
+             this.persons.splice(a,1)
+
+             this.persons.push(cc)
+
+              
+
+         }else{
+
+         this.compares.push(s);
+         this.persons.push(cc);
+
+        }
+
+         console.log('----------------')
+
+         console.log(this.compares);
+         console.log(this.persons);
 
 
-        }.bind(this));
 
-        var anss = choice + "'s score:" + count;
-        ans.push(anss); 
+    },
 
-      }.bind(this));
+    result: function() {
 
-      console.log(ans);
+       
+       var len = this.persons.length;
+
+       console.log(len);
+
+       for(var i = 0; i<len ; i++){
+
+            
+
+            var params = {
+                 
+                 name: this.persons[i],
+                 gpa: this.compares[i]
+
+            };
+
+
+                axios.post("http://localhost:3000/api/mode",params).then(response => {
+
+                                console.log(response.data);
+
+                })
+
+
+       }
 
 
     }
-
   },
-  computed: {
-
-  }
+  computed: {}
 };
 </script>
